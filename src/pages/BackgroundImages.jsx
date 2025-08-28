@@ -61,6 +61,11 @@ const BackgroundImages = () => {
       if (data.success) {
         console.log('Setting images:', data.data);
         console.log('Images array length:', data.data.length);
+        // Log the first image to see its structure
+        if (data.data.length > 0) {
+          console.log('First image structure:', data.data[0]);
+          console.log('First image URL:', data.data[0].image_url);
+        }
         setImages(data.data);
         console.log('Images set, current images state should now be:', data.data);
       } else {
@@ -155,6 +160,24 @@ const BackgroundImages = () => {
     setSelectedFiles([]);
     setSelectedSeason('all');
     setUploading(false);
+  };
+
+  // Helper function to get proper image URL
+  const getImageUrl = (image) => {
+    const url = image.image_url || image.url || image.path;
+    
+    if (!url) {
+      return 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjEyMCIgdmlld0BveD0iMCAwIDIwMCAxMjAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJlY3Qgd2lkdGg9IjIwMCIgaGVpZ2h0PSIxMjAiIGZpbGw9IiNGM0Y0RjYiLz48cGF0aCBkPSJNNjcuNSA2MEw4MC41IDQ3TDkzLjUgNjBMMTA2LjUgNDdMMTE5LjUgNjBWNzVINjcuNVY2MFoiIGZpbGw9IiNEMUQ1REIiLz48L3N2Zz4=';
+    }
+    
+    // If it's already a full URL, return it directly
+    // The browser should be able to load external images directly
+    if (url.startsWith('http://') || url.startsWith('https://')) {
+      return url;
+    }
+    
+    // If it's a relative path, prepend the API base URL
+    return `${API_BASE_URL}${url}`;
   };
 
   const deleteImage = async (imageId) => {
@@ -395,10 +418,12 @@ const BackgroundImages = () => {
               <div key={image.id} className="group relative bg-gray-50 rounded-lg overflow-hidden border">
                 <div className="aspect-w-16 aspect-h-9 bg-gray-200">
                   <img
-                    src={image.image_url || image.url || image.path || 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjEyMCIgdmlld0JveD0iMCAwIDIwMCAxMjAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJlY3Qgd2lkdGg9IjIwMCIgaGVpZ2h0PSIxMjAiIGZpbGw9IiNGM0Y0RjYiLz48cGF0aCBkPSJNNjcuNSA2MEw4MC41IDQ3TDkzLjUgNjBMMTA2LjUgNDdMMTE5LjUgNjBWNzVINjcuNVY2MFoiIGZpbGw9IiNEMUQ1REIiLz48L3N2Zz4='}
+                    src={getImageUrl(image)}
                     alt={image.title || 'Background image'}
                     className="w-full h-48 object-cover"
+                    loading="lazy"
                     onError={(e) => {
+                      console.error('Failed to load image:', image.image_url);
                       e.target.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjEyMCIgdmlld0JveD0iMCAwIDIwMCAxMjAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJlY3Qgd2lkdGg9IjIwMCIgaGVpZ2h0PSIxMjAiIGZpbGw9IiNGM0Y0RjYiLz48cGF0aCBkPSJNNjcuNSA2MEw4MC41IDQ3TDkzLjUgNjBMMTA2LjUgNDdMMTE5LjUgNjBWNzVINjcuNVY2MFoiIGZpbGw9IiNEMUQ1REIiLz48L3N2Zz4=';
                     }}
                   />
