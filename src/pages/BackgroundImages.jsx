@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { API_BASE_URL } from '../config/apiUrl';
 import { useParams, Link } from 'react-router-dom';
-import { ArrowLeft, Upload, Trash2, Eye, Download, Image as ImageIcon, X, Snowflake, Sun, Leaf, Calendar } from 'lucide-react';
+import { ArrowLeft, Upload, Trash2, Eye, Download, Image as ImageIcon, X, Snowflake, Sun, Leaf, Calendar, Plus } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 const BackgroundImages = () => {
@@ -15,6 +15,9 @@ const BackgroundImages = () => {
   const [previewImage, setPreviewImage] = useState(null);
   const [selectedSeason, setSelectedSeason] = useState('all');
   const [editingSeasonId, setEditingSeasonId] = useState(null);
+  const [imageUrl, setImageUrl] = useState('');
+  const [imageTitle, setImageTitle] = useState('');
+  const [showUrlUpload, setShowUrlUpload] = useState(true);
   
   const seasons = [
     { value: 'all', label: 'All Year', icon: Calendar, color: 'text-gray-600' },
@@ -180,6 +183,48 @@ const BackgroundImages = () => {
     return `${API_BASE_URL}${url}`;
   };
 
+  const uploadImageUrl = async () => {
+    if (!imageUrl) {
+      toast.error('Please enter an image URL');
+      return;
+    }
+
+    setUploading(true);
+    const token = localStorage.getItem('token');
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/property/${propertyId}/backgrounds`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          imageUrl: imageUrl,
+          title: imageTitle || undefined,
+          season: selectedSeason,
+          uploadType: 'url'
+        })
+      });
+
+      const data = await response.json();
+      if (data.success) {
+        toast.success('Image added successfully');
+        setImageUrl('');
+        setImageTitle('');
+        setSelectedSeason('all');
+        fetchBackgroundImages();
+      } else {
+        toast.error(data.message || 'Failed to add image');
+      }
+    } catch (error) {
+      toast.error('Failed to add image');
+      console.error('Error adding image:', error);
+    } finally {
+      setUploading(false);
+    }
+  };
+
   const deleteImage = async (imageId) => {
     if (!confirm('Are you sure you want to delete this background image?')) {
       return;
@@ -288,9 +333,89 @@ const BackgroundImages = () => {
 
       {/* Upload Section */}
       <div className="bg-white rounded-lg shadow-sm border p-6">
-        <h2 className="text-lg font-semibold text-gray-900 mb-4">Upload Background Images</h2>
+        <h2 className="text-lg font-semibold text-gray-900 mb-4">Add Background Image</h2>
         
-        {/* Drag & Drop Area */}
+        {/* URL Upload Form */}
+        <div className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Image URL
+            </label>
+            <input
+              type="url"
+              value={imageUrl}
+              onChange={(e) => setImageUrl(e.target.value)}
+              placeholder="https://example.com/image.jpg"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+            />
+            <p className="mt-1 text-xs text-gray-500">
+              Enter the URL of an image (JPG, PNG, GIF)
+            </p>
+          </div>
+          
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Title (optional)
+            </label>
+            <input
+              type="text"
+              value={imageTitle}
+              onChange={(e) => setImageTitle(e.target.value)}
+              placeholder="e.g., Winter Mountain View"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+            />
+          </div>
+          
+          {/* Season Selection */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Season
+            </label>
+            <div className="flex space-x-2">
+              {seasons.map((season) => {
+                const Icon = season.icon;
+                return (
+                  <button
+                    key={season.value}
+                    type="button"
+                    onClick={() => setSelectedSeason(season.value)}
+                    className={`px-3 py-2 rounded-md text-sm font-medium transition-colors flex items-center space-x-2 ${
+                      selectedSeason === season.value
+                        ? 'bg-blue-100 text-blue-700 border-2 border-blue-500'
+                        : 'bg-gray-100 text-gray-700 border-2 border-transparent hover:bg-gray-200'
+                    }`}
+                  >
+                    <Icon className={`h-4 w-4 ${season.color}`} />
+                    <span>{season.label}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+          
+          {/* Add Button */}
+          <div className="flex justify-end">
+            <button
+              onClick={uploadImageUrl}
+              disabled={uploading || !imageUrl}
+              className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
+            >
+              {uploading ? (
+                <>
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                  Adding...
+                </>
+              ) : (
+                <>
+                  <Plus className="h-4 w-4 mr-2" />
+                  Add Image
+                </>
+              )}
+            </button>
+          </div>
+        </div>
+        
+        {/* Note about file upload */}
         <div
           className={`border-2 border-dashed rounded-lg p-8 text-center transition-colors ${
             dragActive 
