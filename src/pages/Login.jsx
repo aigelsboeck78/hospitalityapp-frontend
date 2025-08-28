@@ -9,6 +9,7 @@ const Login = ({ onLoginSuccess }) => {
     username: '',
     password: ''
   });
+  const [useEmail, setUseEmail] = useState(false);
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e) => {
@@ -16,19 +17,24 @@ const Login = ({ onLoginSuccess }) => {
     setLoading(true);
 
     try {
+      const loginData = useEmail 
+        ? { email: credentials.username, password: credentials.password }
+        : { username: credentials.username, password: credentials.password };
+
       const response = await fetch(API_ENDPOINTS.LOGIN, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(credentials),
+        body: JSON.stringify(loginData),
       });
 
       const data = await response.json();
 
       if (data.success) {
-        // Store token in localStorage
+        // Store tokens in localStorage
         localStorage.setItem('token', data.data.token);
+        localStorage.setItem('refreshToken', data.data.refreshToken);
         localStorage.setItem('user', JSON.stringify(data.data.user));
         
         toast.success('Login successful!');
@@ -64,18 +70,27 @@ const Login = ({ onLoginSuccess }) => {
           </p>
         </div>
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
+          <div className="mb-4">
+            <button
+              type="button"
+              onClick={() => setUseEmail(!useEmail)}
+              className="text-sm text-blue-600 hover:text-blue-800 underline"
+            >
+              {useEmail ? 'Login with username' : 'Login with email'}
+            </button>
+          </div>
           <div className="rounded-md shadow-sm -space-y-px">
             <div>
               <label htmlFor="username" className="sr-only">
-                Username
+                {useEmail ? 'Email' : 'Username'}
               </label>
               <input
                 id="username"
                 name="username"
-                type="text"
+                type={useEmail ? 'email' : 'text'}
                 required
                 className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
-                placeholder="Username"
+                placeholder={useEmail ? 'Email' : 'Username'}
                 value={credentials.username}
                 onChange={(e) => setCredentials({ ...credentials, username: e.target.value })}
               />
@@ -108,9 +123,15 @@ const Login = ({ onLoginSuccess }) => {
           </div>
 
           <div className="text-center text-sm text-gray-600">
-            <p>Default credentials:</p>
-            <p className="font-mono">Username: admin</p>
-            <p className="font-mono">Password: admin123</p>
+            <p>Please login with your credentials</p>
+            <p className="mt-2">
+              <a href="#" className="text-blue-600 hover:text-blue-800" onClick={(e) => {
+                e.preventDefault();
+                toast.info('Please contact your administrator for password reset');
+              }}>
+                Forgot password?
+              </a>
+            </p>
           </div>
         </form>
       </div>
