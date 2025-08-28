@@ -23,7 +23,7 @@ export const SocketProvider = ({ children }) => {
     const enableWebSocket = import.meta.env.VITE_ENABLE_WEBSOCKET === 'true';
     
     if (isProduction && !enableWebSocket) {
-      console.log('WebSocket disabled in production serverless environment');
+      // WebSocket is disabled in production serverless environment
       setIsConnected(false);
       return;
     }
