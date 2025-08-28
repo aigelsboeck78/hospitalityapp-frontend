@@ -157,14 +157,14 @@ const BackgroundImages = () => {
     setUploading(false);
   };
 
-  const deleteImage = async (filename) => {
+  const deleteImage = async (imageId) => {
     if (!confirm('Are you sure you want to delete this background image?')) {
       return;
     }
 
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`${API_BASE_URL}/api/property/${propertyId}/backgrounds/${filename}`, {
+      const response = await fetch(`${API_BASE_URL}/api/property/${propertyId}/backgrounds/${imageId}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`
@@ -173,7 +173,7 @@ const BackgroundImages = () => {
 
       const data = await response.json();
       if (data.success) {
-        setImages(images.filter(img => img.filename !== filename));
+        setImages(images.filter(img => img.id !== imageId));
         toast.success('Background image deleted successfully');
       } else {
         toast.error(data.message || 'Failed to delete image');
@@ -395,8 +395,8 @@ const BackgroundImages = () => {
               <div key={image.id} className="group relative bg-gray-50 rounded-lg overflow-hidden border">
                 <div className="aspect-w-16 aspect-h-9 bg-gray-200">
                   <img
-                    src={image.url.startsWith('http') ? image.url : `${API_BASE_URL}${image.url}`}
-                    alt={image.filename}
+                    src={image.image_url || image.url || image.path || 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjEyMCIgdmlld0JveD0iMCAwIDIwMCAxMjAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJlY3Qgd2lkdGg9IjIwMCIgaGVpZ2h0PSIxMjAiIGZpbGw9IiNGM0Y0RjYiLz48cGF0aCBkPSJNNjcuNSA2MEw4MC41IDQ3TDkzLjUgNjBMMTA2LjUgNDdMMTE5LjUgNjBWNzVINjcuNVY2MFoiIGZpbGw9IiNEMUQ1REIiLz48L3N2Zz4='}
+                    alt={image.title || 'Background image'}
                     className="w-full h-48 object-cover"
                     onError={(e) => {
                       e.target.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjEyMCIgdmlld0JveD0iMCAwIDIwMCAxMjAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJlY3Qgd2lkdGg9IjIwMCIgaGVpZ2h0PSIxMjAiIGZpbGw9IiNGM0Y0RjYiLz48cGF0aCBkPSJNNjcuNSA2MEw4MC41IDQ3TDkzLjUgNjBMMTA2LjUgNDdMMTE5LjUgNjBWNzVINjcuNVY2MFoiIGZpbGw9IiNEMUQ1REIiLz48L3N2Zz4=';
@@ -415,15 +415,15 @@ const BackgroundImages = () => {
                       <Eye className="h-4 w-4 text-gray-700" />
                     </button>
                     <a
-                      href={image.url.startsWith('http') ? image.url : `${API_BASE_URL}${image.url}`}
-                      download={image.filename}
+                      href={image.image_url || image.url || image.path || '#'}
+                      download={image.title || 'background.jpg'}
                       className="p-2 bg-white rounded-full shadow-lg hover:bg-gray-100"
                       title="Download"
                     >
                       <Download className="h-4 w-4 text-gray-700" />
                     </a>
                     <button
-                      onClick={() => deleteImage(image.filename)}
+                      onClick={() => deleteImage(image.id)}
                       className="p-2 bg-white rounded-full shadow-lg hover:bg-red-50"
                       title="Delete"
                     >
@@ -434,8 +434,8 @@ const BackgroundImages = () => {
 
                 {/* Image info */}
                 <div className="p-3">
-                  <p className="text-sm font-medium text-gray-900 truncate" title={image.filename}>
-                    {image.title || image.filename}
+                  <p className="text-sm font-medium text-gray-900 truncate" title={image.title || 'Background Image'}>
+                    {image.title || 'Untitled Image'}
                   </p>
                   <div className="flex items-center justify-between mt-2">
                     <div className="flex items-center space-x-1">
@@ -465,7 +465,7 @@ const BackgroundImages = () => {
                       )}
                     </div>
                     <p className="text-xs text-gray-500">
-                      {new Date(image.uploadedAt).toLocaleDateString()}
+                      {new Date(image.created_at || image.uploadedAt).toLocaleDateString()}
                     </p>
                   </div>
                 </div>
