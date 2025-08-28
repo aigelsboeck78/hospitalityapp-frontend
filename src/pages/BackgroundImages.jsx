@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { API_BASE_URL } from '../config/apiUrl';
 import { useParams, Link } from 'react-router-dom';
-import { ArrowLeft, Upload, Trash2, Eye, Download, Image as ImageIcon, X, Snowflake, Sun, Leaf, Calendar, Plus } from 'lucide-react';
+import { ArrowLeft, Upload, Trash2, Eye, Download, Image as ImageIcon, X, Snowflake, Sun, Leaf, Calendar, Plus, AlertTriangle } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 const BackgroundImages = () => {
@@ -62,15 +62,11 @@ const BackgroundImages = () => {
       const data = await response.json();
       console.log('Background images API response:', data);
       if (data.success) {
-        console.log('Setting images:', data.data);
-        console.log('Images array length:', data.data.length);
-        // Log the first image to see its structure
-        if (data.data.length > 0) {
-          console.log('First image structure:', data.data[0]);
-          console.log('First image URL:', data.data[0].image_url);
-        }
         setImages(data.data);
-        console.log('Images set, current images state should now be:', data.data);
+        // Show warning if there were invalid images that got filtered
+        if (data.data.length === 0 && data.totalCount > 0) {
+          toast.error('Invalid image records were filtered out. Please use the cleanup button and re-add images using URLs.');
+        }
       } else {
         console.log('API error:', data.message);
         toast.error(data.message || 'Failed to fetch background images');
@@ -80,6 +76,37 @@ const BackgroundImages = () => {
       console.error('Error fetching background images:', error);
     } finally {
       setLoading(false);
+    }
+  };
+  
+  const cleanupInvalidImages = async () => {
+    if (!confirm('This will remove all invalid image records (uploaded files that no longer exist). Continue?')) {
+      return;
+    }
+    
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${API_BASE_URL}/api/property/${propertyId}/backgrounds/cleanup`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      
+      const data = await response.json();
+      if (data.success) {
+        if (data.deletedCount > 0) {
+          toast.success(`Cleaned up ${data.deletedCount} invalid image records`);
+          fetchBackgroundImages();
+        } else {
+          toast.info('No invalid images to clean up');
+        }
+      } else {
+        toast.error(data.message || 'Failed to cleanup images');
+      }
+    } catch (error) {
+      toast.error('Failed to cleanup images');
+      console.error('Error cleaning up images:', error);
     }
   };
 
@@ -329,6 +356,13 @@ const BackgroundImages = () => {
             <p className="mt-1 text-sm text-gray-600">Managing TV app backgrounds for {property.name}</p>
           )}
         </div>
+        <button
+          onClick={cleanupInvalidImages}
+          className="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+        >
+          <AlertTriangle className="h-4 w-4 mr-2 text-yellow-500" />
+          Cleanup Invalid Images
+        </button>
       </div>
 
       {/* Upload Section */}
@@ -349,7 +383,7 @@ const BackgroundImages = () => {
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
             />
             <p className="mt-1 text-xs text-gray-500">
-              Enter the URL of an image (JPG, PNG, GIF)
+              Enter a publicly accessible image URL (JPG, PNG, GIF). File uploads are not supported on Vercel.
             </p>
           </div>
           
