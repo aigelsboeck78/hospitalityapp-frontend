@@ -18,6 +18,16 @@ export const SocketProvider = ({ children }) => {
   const [connectionError, setConnectionError] = useState(null);
 
   useEffect(() => {
+    // Disable WebSocket in production (Vercel serverless doesn't support persistent connections)
+    const isProduction = import.meta.env.PROD;
+    const enableWebSocket = import.meta.env.VITE_ENABLE_WEBSOCKET === 'true';
+    
+    if (isProduction && !enableWebSocket) {
+      console.log('WebSocket disabled in production serverless environment');
+      setIsConnected(false);
+      return;
+    }
+    
     const wsUrl = import.meta.env.VITE_WS_URL || 'http://localhost:3001';
     
     const newSocket = io(wsUrl, {
