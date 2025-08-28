@@ -24,6 +24,8 @@ import PropertyInformation from './pages/PropertyInformation'
 import PropertyDevices from './pages/PropertyDevices'
 import PropertyDevicesMDM from './pages/PropertyDevicesMDM'
 import MDMDashboard from './pages/MDMDashboard'
+import ChangePassword from './pages/ChangePassword'
+import UserManagement from './pages/UserManagement'
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -110,6 +112,8 @@ function App() {
           <Route path="/properties/:propertyId/dining/new" element={<DiningForm />} />
           <Route path="/properties/:propertyId/dining/:id/edit" element={<DiningForm />} />
           <Route path="/settings" element={<Settings />} />
+          <Route path="/change-password" element={<ChangePassword />} />
+          <Route path="/users" element={<UserManagement />} />
         </Routes>
       </Layout>
     </SocketProvider>

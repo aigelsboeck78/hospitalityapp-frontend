@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { 
   Home,
   Building,
@@ -14,7 +14,9 @@ import {
   Activity,
   LogOut,
   Calendar,
-  UtensilsCrossed
+  UtensilsCrossed,
+  Key,
+  UserCog
 } from 'lucide-react';
 import { useSocket } from '../contexts/SocketContext';
 
@@ -29,7 +31,9 @@ const navigation = [
 const Layout = ({ children }) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
   const { isConnected, connectionError } = useSocket();
+  const user = JSON.parse(localStorage.getItem('user') || '{}');
 
   const handleLogout = () => {
     localStorage.removeItem('token');
@@ -144,7 +148,7 @@ const Layout = ({ children }) => {
               </nav>
             </div>
             
-            {/* Connection status and logout */}
+            {/* Connection status and user menu */}
             <div className="flex-shrink-0 border-t border-gray-200 p-4 space-y-2">
               <div className="flex items-center">
                 <div className={`h-2 w-2 rounded-full mr-2 ${
@@ -154,6 +158,25 @@ const Layout = ({ children }) => {
                   {isConnected ? 'Connected' : 'Disconnected'}
                 </span>
               </div>
+              <div className="text-xs text-gray-500 mb-2">
+                Logged in as: <span className="font-semibold">{user.username}</span>
+              </div>
+              <button
+                onClick={() => navigate('/change-password')}
+                className="flex items-center w-full text-left px-2 py-1 text-sm text-gray-600 hover:bg-gray-50 hover:text-gray-900 rounded-md"
+              >
+                <Key className="mr-2 h-4 w-4" />
+                Change Password
+              </button>
+              {user.role === 'admin' && (
+                <button
+                  onClick={() => navigate('/users')}
+                  className="flex items-center w-full text-left px-2 py-1 text-sm text-gray-600 hover:bg-gray-50 hover:text-gray-900 rounded-md"
+                >
+                  <UserCog className="mr-2 h-4 w-4" />
+                  User Management
+                </button>
+              )}
               <button
                 onClick={handleLogout}
                 className="flex items-center w-full text-left px-2 py-1 text-sm text-gray-600 hover:bg-gray-50 hover:text-gray-900 rounded-md"
