@@ -116,8 +116,8 @@ const BackgroundImages = () => {
         toast.error(`${file.name} is not an image file`);
         return false;
       }
-      if (file.size > 15 * 1024 * 1024) { // 15MB limit
-        toast.error(`${file.name} is too large. Maximum size is 15MB`);
+      if (file.size > 3 * 1024 * 1024) { // 3MB limit for Vercel
+        toast.error(`${file.name} is too large. Maximum size is 3MB for Vercel deployment`);
         return false;
       }
       return true;
@@ -200,13 +200,17 @@ const BackgroundImages = () => {
       return 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjEyMCIgdmlld0BveD0iMCAwIDIwMCAxMjAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJlY3Qgd2lkdGg9IjIwMCIgaGVpZ2h0PSIxMjAiIGZpbGw9IiNGM0Y0RjYiLz48cGF0aCBkPSJNNjcuNSA2MEw4MC41IDQ3TDkzLjUgNjBMMTA2LjUgNDdMMTE5LjUgNjBWNzVINjcuNVY2MFoiIGZpbGw9IiNEMUQ1REIiLz48L3N2Zz4=';
     }
     
+    // If it's a data URL (base64), return it directly
+    if (url.startsWith('data:image/')) {
+      return url;
+    }
+    
     // If it's already a full URL, return it directly
-    // The browser should be able to load external images directly
     if (url.startsWith('http://') || url.startsWith('https://')) {
       return url;
     }
     
-    // If it's a relative path, prepend the API base URL
+    // If it's a relative path, prepend the API base URL (though this won't work on Vercel)
     return `${API_BASE_URL}${url}`;
   };
 
@@ -475,7 +479,10 @@ const BackgroundImages = () => {
             </label>
           </p>
           <p className="text-xs text-gray-500 mt-1">
-            Maximum file size: 15MB per image. Supported formats: JPG, PNG, GIF
+            Maximum file size: 3MB per image (Vercel limit). Supported formats: JPG, PNG, GIF
+          </p>
+          <p className="text-xs text-yellow-600 mt-1">
+            ⚠️ Note: Uploaded images are stored as base64 in the database. For larger images, use URL upload instead.
           </p>
           <p className="text-xs text-gray-500">
             Recommended resolution: 1920x1080 or higher for TV display
