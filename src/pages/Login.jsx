@@ -124,12 +124,22 @@ const Login = ({ onLoginSuccess }) => {
 
           <div className="text-center text-sm text-gray-600">
             <p>Please login with your credentials</p>
+            <p className="mt-2 text-xs text-gray-500">
+              (The old admin/admin123 credentials no longer work)
+            </p>
+            <div className="mt-3 p-3 bg-yellow-50 border border-yellow-200 rounded">
+              <p className="text-xs font-semibold text-yellow-800">Temporary Credentials:</p>
+              <p className="text-xs font-mono mt-1">Username: admin</p>
+              <p className="text-xs font-mono">Password: ricAKi0v7a4mKFVx</p>
+              <p className="text-xs text-yellow-700 mt-2">⚠️ Change immediately after login!</p>
+            </div>
             <p className="mt-2">
               <a href="#" className="text-blue-600 hover:text-blue-800" onClick={(e) => {
                 e.preventDefault();
-                toast.info('Please contact your administrator for password reset');
+                navigator.clipboard.writeText('ricAKi0v7a4mKFVx');
+                toast.success('Password copied to clipboard!');
               }}>
-                Forgot password?
+                Copy password to clipboard
               </a>
             </p>
           </div>
