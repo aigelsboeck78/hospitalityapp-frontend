@@ -26,7 +26,10 @@ import {
   Info,
   Link as LinkIcon,
   Save,
-  X
+  X,
+  Sparkles,
+  Waves,
+  WashingMachine
 } from 'lucide-react';
 import axios from 'axios';
 
@@ -43,7 +46,10 @@ const iconMap = {
   leaf: Leaf,
   phone: Phone,
   clock: Clock,
-  info: Info
+  info: Info,
+  sparkles: Sparkles,
+  waves: Waves,
+  'washing-machine': WashingMachine
 };
 
 const PropertyInformation = () => {
@@ -72,9 +78,59 @@ const PropertyInformation = () => {
 
   const categories = ['amenity', 'guide', 'service'];
   const types = {
-    amenity: ['wifi', 'heating', 'fireplace', 'pool', 'tv', 'kitchen', 'parking', 'laundry'],
-    guide: ['checkin', 'checkout', 'recycling', 'emergency', 'house-rules', 'local-area'],
+    amenity: ['wifi', 'heating', 'fireplace', 'pool', 'sauna', 'whirlpool', 'tv', 'kitchen', 'parking', 'laundry'],
+    guide: ['checkin', 'checkout', 'recycling', 'emergency', 'house-rules', 'local-area', 'laundry-combo'],
     service: ['summercard', 'cleaning', 'concierge', 'transfers', 'ski-pass']
+  };
+  
+  const typeLabels = {
+    wifi: 'WiFi',
+    heating: 'Heating',
+    fireplace: 'Fireplace',
+    pool: 'Pool',
+    sauna: 'Sauna',
+    whirlpool: 'Whirlpool / Hot Tub',
+    tv: 'TV',
+    kitchen: 'Kitchen',
+    parking: 'Parking',
+    laundry: 'Laundry',
+    checkin: 'Check-in',
+    checkout: 'Check-out',
+    recycling: 'Recycling',
+    emergency: 'Emergency',
+    'house-rules': 'House Rules',
+    'local-area': 'Local Area',
+    'laundry-combo': 'Wash & Dry Combo Machine',
+    summercard: 'Summer Card',
+    cleaning: 'Cleaning',
+    concierge: 'Concierge',
+    transfers: 'Transfers',
+    'ski-pass': 'Ski Pass'
+  };
+  
+  const typeIcons = {
+    wifi: 'wifi',
+    heating: 'flame',
+    fireplace: 'flame',
+    pool: 'drop',
+    sauna: 'sparkles',
+    whirlpool: 'waves',
+    tv: 'tv',
+    kitchen: 'fork-knife',
+    parking: 'info',
+    laundry: 'washing-machine',
+    'laundry-combo': 'washing-machine',
+    checkin: 'clock',
+    checkout: 'clock',
+    recycling: 'leaf',
+    emergency: 'phone',
+    'house-rules': 'info',
+    'local-area': 'info',
+    summercard: 'ticket',
+    cleaning: 'sparkles',
+    concierge: 'info',
+    transfers: 'info',
+    'ski-pass': 'ticket'
   };
 
   // Fetch property information
@@ -429,14 +485,21 @@ const PropertyInformation = () => {
                       </label>
                       <select
                         value={formData.type}
-                        onChange={(e) => setFormData({ ...formData, type: e.target.value })}
+                        onChange={(e) => {
+                          const selectedType = e.target.value;
+                          setFormData({ 
+                            ...formData, 
+                            type: selectedType,
+                            icon: typeIcons[selectedType] || 'info'
+                          });
+                        }}
                         className="input"
                         required
                       >
                         <option value="">Select a type</option>
                         {(types[formData.category] || []).map(type => (
                           <option key={type} value={type}>
-                            {type.replace('-', ' ').charAt(0).toUpperCase() + type.slice(1).replace('-', ' ')}
+                            {typeLabels[type] || type.replace('-', ' ').charAt(0).toUpperCase() + type.slice(1).replace('-', ' ')}
                           </option>
                         ))}
                       </select>
