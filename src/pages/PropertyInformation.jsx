@@ -82,7 +82,7 @@ const PropertyInformation = () => {
     ['property-information', propertyId],
     async () => {
       const token = localStorage.getItem('token');
-      const response = await axios.get(`${API_URL}/properties/${propertyId}/information`, {
+      const response = await axios.get(`${API_URL}/api/properties/${propertyId}/information`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       return response.data.data || [];
@@ -94,11 +94,11 @@ const PropertyInformation = () => {
     async (data) => {
       const token = localStorage.getItem('token');
       if (editingItem) {
-        return axios.put(`${API_URL}/property-info/${editingItem.id}`, data, {
+        return axios.put(`${API_URL}/api/property-info/${editingItem.id}`, data, {
           headers: { Authorization: `Bearer ${token}` }
         });
       } else {
-        return axios.post(`${API_URL}/properties/${propertyId}/information`, data, {
+        return axios.post(`${API_URL}/api/properties/${propertyId}/information`, data, {
           headers: { Authorization: `Bearer ${token}` }
         });
       }
@@ -119,7 +119,7 @@ const PropertyInformation = () => {
   const deleteMutation = useMutation(
     async (id) => {
       const token = localStorage.getItem('token');
-      return axios.delete(`${API_URL}/property-info/${id}`, {
+      return axios.delete(`${API_URL}/api/property-info/${id}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
     },
@@ -157,7 +157,7 @@ const PropertyInformation = () => {
   const orderMutation = useMutation(
     async (items) => {
       const token = localStorage.getItem('token');
-      return axios.put(`${API_URL}/property-info/order`, { items }, {
+      return axios.put(`${API_URL}/api/property-info/order`, { items }, {
         headers: { Authorization: `Bearer ${token}` }
       });
     },

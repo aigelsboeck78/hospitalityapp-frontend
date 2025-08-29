@@ -373,7 +373,10 @@ const ActivityForm = () => {
       let activityId = id;
       
       if (!activityId) {
-        toast.info('Please save the activity first before searching for images');
+        toast('Please save the activity first before searching for images', {
+          icon: 'ℹ️',
+          duration: 3000
+        });
         return;
       }
       
@@ -966,8 +969,8 @@ const ActivityForm = () => {
             </button>
           </div>
           
-          {/* Google Image Search Button */}
-          {id && (
+          {/* Google Image Search Button - Disabled until backend endpoint is implemented */}
+          {false && id && (
             <div className="mb-4">
               <button
                 type="button"
