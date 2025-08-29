@@ -29,7 +29,7 @@ import {
   X,
   Sparkles,
   Waves,
-  WashingMachine
+  Shirt
 } from 'lucide-react';
 import axios from 'axios';
 
@@ -49,7 +49,7 @@ const iconMap = {
   info: Info,
   sparkles: Sparkles,
   waves: Waves,
-  'washing-machine': WashingMachine
+  'washing-machine': Shirt
 };
 
 const PropertyInformation = () => {
