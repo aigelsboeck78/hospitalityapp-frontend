@@ -239,7 +239,10 @@ const DiningForm = () => {
       if (data.success || response.ok) {
         toast.success(isEdit ? 'Dining place updated successfully' : 'Dining place created successfully');
         if (formData.image_url && !formData.image_url.includes('blob.vercel-storage.com') && formData.image_url.startsWith('http')) {
-          toast.success('Image imported to CDN successfully!');
+          toast('Image imported to CDN successfully!', {
+            icon: '✅',
+            duration: 3000
+          });
         }
         navigate(propertyId ? `/properties/${propertyId}/dining` : '/dining');
       } else {

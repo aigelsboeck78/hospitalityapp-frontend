@@ -330,7 +330,10 @@ const ActivityForm = () => {
                 setImagePreview(proxiedUrl);
                 
                 // Show info about auto-import if not already a blob URL
-                toast.info('This image will be automatically imported to our CDN when you save.');
+                toast('This image will be automatically imported to our CDN when you save.', {
+                  icon: '📥',
+                  duration: 4000
+                });
               } else {
                 // Fallback to direct URL (may not display due to CORS)
                 setImagePreview(url);
@@ -491,7 +494,10 @@ const ActivityForm = () => {
       // Show importing toast if external URL
       if (imageUrlInput && !imageUrlInput.includes('blob.vercel-storage.com') && imageUrlInput.startsWith('http')) {
         setImageImporting(true);
-        toast.info('Importing image to CDN...');
+        toast('Importing image to CDN...', {
+          icon: '⏳',
+          duration: 3000
+        });
       }
       
       const response = await fetch(url, {
