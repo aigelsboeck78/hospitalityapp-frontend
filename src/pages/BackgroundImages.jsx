@@ -496,7 +496,7 @@ const BackgroundImages = () => {
             Maximum file size: 3MB per image. Supported formats: JPG, PNG, GIF
           </p>
           <p className="text-xs text-blue-600 mt-1">
-            ✨ Your images will be automatically hosted and optimized
+            ✨ Your images will be stored using Vercel Blob Storage
           </p>
           <p className="text-xs text-gray-500">
             Recommended resolution: 1920x1080 or higher for TV display
