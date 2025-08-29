@@ -401,7 +401,10 @@ const BackgroundImages = () => {
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
             />
             <p className="mt-1 text-xs text-gray-500">
-              Enter a publicly accessible image URL (JPG, PNG, GIF). File uploads are not supported on Vercel.
+              Enter a publicly accessible image URL (JPG, PNG, GIF)
+            </p>
+            <p className="mt-1 text-xs text-blue-600">
+              💡 Tip: Use free services like Unsplash, Imgur, or Cloudinary to host your images
             </p>
           </div>
           
@@ -467,8 +470,8 @@ const BackgroundImages = () => {
           </div>
         </div>
         
-        {/* Note about file upload */}
-        <div
+        {/* Note about file upload - TEMPORARILY HIDDEN */}
+        {false && <div
           className={`border-2 border-dashed rounded-lg p-8 text-center transition-colors ${
             dragActive 
               ? 'border-blue-400 bg-blue-50' 
@@ -495,13 +498,16 @@ const BackgroundImages = () => {
           <p className="text-xs text-gray-500 mt-1">
             Maximum file size: 3MB per image (Vercel limit). Supported formats: JPG, PNG, GIF
           </p>
-          <p className="text-xs text-yellow-600 mt-1">
-            ⚠️ Note: Uploaded images are stored as base64 in the database. For larger images, use URL upload instead.
+          <p className="text-xs text-red-600 mt-1">
+            ⚠️ File uploads are temporarily disabled. Please use the URL upload option above with services like:
+          </p>
+          <p className="text-xs text-gray-600 mt-1">
+            • Unsplash (unsplash.com) • Imgur (imgur.com) • Cloudinary (cloudinary.com) • Any direct image URL
           </p>
           <p className="text-xs text-gray-500">
             Recommended resolution: 1920x1080 or higher for TV display
           </p>
-        </div>
+        </div>}
 
         {/* Season Selection */}
         <div className="mt-4">
