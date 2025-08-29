@@ -43,6 +43,7 @@ const ActivityForm = () => {
   const [imagePreview, setImagePreview] = useState('');
   const [imageUrlInput, setImageUrlInput] = useState('');
   const [imageInputMode, setImageInputMode] = useState('upload'); // 'upload' or 'url'
+  const [imageImporting, setImageImporting] = useState(false);
   
   const activityTypes = [
     { value: 'outdoor', label: 'Outdoor Activities' },
@@ -178,30 +179,36 @@ const ActivityForm = () => {
             setImageUrlInput(activity.image_url);
             setImageInputMode('url');
             
-            // Use proxy for external images to avoid CORS issues
-            try {
-              const checkResponse = await fetch(`${API_BASE_URL}/api/check-image`, {
-                method: 'POST',
-                headers: {
-                  'Content-Type': 'application/json',
-                  'Authorization': `Bearer ${token}`
-                },
-                body: JSON.stringify({ url: activity.image_url })
-              });
-              
-              const checkResult = await checkResponse.json();
-              
-              if (checkResult.success && checkResult.data.accessible && checkResult.data.isImage) {
-                // Use proxied URL for preview
-                const proxiedUrl = `${API_BASE_URL}/api/proxy/image?url=${encodeURIComponent(activity.image_url)}`;
-                setImagePreview(proxiedUrl);
-              } else {
-                // Fallback to direct URL
+            // Check if it's a Vercel Blob Storage URL
+            if (activity.image_url.includes('blob.vercel-storage.com')) {
+              // Use Blob Storage URL directly - no proxy needed
+              setImagePreview(activity.image_url);
+            } else {
+              // Use proxy for external images to avoid CORS issues
+              try {
+                const checkResponse = await fetch(`${API_BASE_URL}/api/check-image`, {
+                  method: 'POST',
+                  headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                  },
+                  body: JSON.stringify({ url: activity.image_url })
+                });
+                
+                const checkResult = await checkResponse.json();
+                
+                if (checkResult.success && checkResult.data.accessible && checkResult.data.isImage) {
+                  // Use proxied URL for preview
+                  const proxiedUrl = `${API_BASE_URL}/api/proxy/image?url=${encodeURIComponent(activity.image_url)}`;
+                  setImagePreview(proxiedUrl);
+                } else {
+                  // Fallback to direct URL
+                  setImagePreview(activity.image_url);
+                }
+              } catch (error) {
+                console.error('Error checking image:', error);
                 setImagePreview(activity.image_url);
               }
-            } catch (error) {
-              console.error('Error checking image:', error);
-              setImagePreview(activity.image_url);
             }
           } else {
             // Local upload - use the helper to get full URL for preview
@@ -297,33 +304,42 @@ const ActivityForm = () => {
         
         // For external URLs, use the proxy for preview
         if (url.startsWith('http://') || url.startsWith('https://')) {
-          const token = localStorage.getItem('token');
-          
-          // Check if we can access the image
-          try {
-            const checkResponse = await fetch(`${API_BASE_URL}/api/check-image`, {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`
-              },
-              body: JSON.stringify({ url })
-            });
-            
-            const checkResult = await checkResponse.json();
-            
-            if (checkResult.success && checkResult.data.accessible && checkResult.data.isImage) {
-              // Use proxied URL for preview
-              const proxiedUrl = `${API_BASE_URL}/api/proxy/image?url=${encodeURIComponent(url)}`;
-              setImagePreview(proxiedUrl);
-            } else {
-              // Fallback to direct URL (may not display due to CORS)
-              setImagePreview(url);
-              toast('Image may not display properly due to external site restrictions, but the URL has been saved.');
-            }
-          } catch (error) {
-            console.error('Error checking image:', error);
+          // Check if it's a Vercel Blob Storage URL
+          if (url.includes('blob.vercel-storage.com')) {
+            // Use Blob Storage URL directly - no proxy needed
             setImagePreview(url);
+          } else {
+            const token = localStorage.getItem('token');
+            
+            // Check if we can access the image
+            try {
+              const checkResponse = await fetch(`${API_BASE_URL}/api/check-image`, {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                  'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({ url })
+              });
+              
+              const checkResult = await checkResponse.json();
+              
+              if (checkResult.success && checkResult.data.accessible && checkResult.data.isImage) {
+                // Use proxied URL for preview
+                const proxiedUrl = `${API_BASE_URL}/api/proxy/image?url=${encodeURIComponent(url)}`;
+                setImagePreview(proxiedUrl);
+                
+                // Show info about auto-import if not already a blob URL
+                toast.info('This image will be automatically imported to our CDN when you save.');
+              } else {
+                // Fallback to direct URL (may not display due to CORS)
+                setImagePreview(url);
+                toast('Image may not display properly due to external site restrictions, but will be imported when saved.');
+              }
+            } catch (error) {
+              console.error('Error checking image:', error);
+              setImagePreview(url);
+            }
           }
         } else {
           // Local URL, use directly
@@ -472,6 +488,12 @@ const ActivityForm = () => {
         
       const method = isEditing ? 'PUT' : 'POST';
       
+      // Show importing toast if external URL
+      if (imageUrlInput && !imageUrlInput.includes('blob.vercel-storage.com') && imageUrlInput.startsWith('http')) {
+        setImageImporting(true);
+        toast.info('Importing image to CDN...');
+      }
+      
       const response = await fetch(url, {
         method,
         headers: {
@@ -483,8 +505,13 @@ const ActivityForm = () => {
       
       const data = await response.json();
       
+      setImageImporting(false);
+      
       if (data.success) {
         toast.success(isEditing ? 'Activity updated successfully' : 'Activity created successfully');
+        if (imageUrlInput && !imageUrlInput.includes('blob.vercel-storage.com') && imageUrlInput.startsWith('http')) {
+          toast.success('Image imported to CDN successfully!');
+        }
         navigate(`/properties/${propertyId}/activities`);
       } else {
         toast.error(data.message || `Failed to ${isEditing ? 'update' : 'create'} activity`);

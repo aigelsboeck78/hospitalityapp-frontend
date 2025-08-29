@@ -23,6 +23,7 @@ const EventForm = ({ event, isOpen, onClose, onSave }) => {
   });
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
+  const [imageImporting, setImageImporting] = useState(false);
 
   const categories = [
     { id: 'general', name: 'General', icon: '🎉' },
@@ -163,6 +164,12 @@ const EventForm = ({ event, isOpen, onClose, onSave }) => {
     }
 
     setLoading(true);
+    
+    // Show importing indicator if external URL
+    if (formData.image_url && !formData.image_url.includes('blob.vercel-storage.com') && formData.image_url.startsWith('http')) {
+      setImageImporting(true);
+    }
+    
     try {
       // Convert datetime-local format back to ISO string
       const eventData = {
@@ -172,8 +179,10 @@ const EventForm = ({ event, isOpen, onClose, onSave }) => {
       };
 
       await onSave(eventData);
+      setImageImporting(false);
     } catch (error) {
       console.error('Error saving event:', error);
+      setImageImporting(false);
       setErrors({ submit: 'Failed to save event. Please try again.' });
     } finally {
       setLoading(false);

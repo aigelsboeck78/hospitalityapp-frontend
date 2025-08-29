@@ -10,6 +10,7 @@ const DiningForm = () => {
   const isEdit = !!id;
   
   const [loading, setLoading] = useState(false);
+  const [imageImporting, setImageImporting] = useState(false);
   const [formData, setFormData] = useState({
     // Basic Information
     name_en: '',
@@ -233,8 +234,13 @@ const DiningForm = () => {
 
       const data = await response.json();
       
+      setImageImporting(false);
+      
       if (data.success || response.ok) {
         toast.success(isEdit ? 'Dining place updated successfully' : 'Dining place created successfully');
+        if (formData.image_url && !formData.image_url.includes('blob.vercel-storage.com') && formData.image_url.startsWith('http')) {
+          toast.success('Image imported to CDN successfully!');
+        }
         navigate(propertyId ? `/properties/${propertyId}/dining` : '/dining');
       } else {
         toast.error(data.message || 'Failed to save dining place');
