@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { API_BASE_URL } from '../config/apiUrl';
 import { Link, useParams } from 'react-router-dom';
-import { Plus, Edit, Trash2, MapPin, Clock, Globe, Phone, DollarSign, Eye, EyeOff, Activity, Star, Utensils, ChevronUp, ChevronDown } from 'lucide-react';
+import { Plus, Edit, Trash2, MapPin, Clock, Globe, Phone, DollarSign, Eye, EyeOff, Activity, Star, Utensils, ChevronUp, ChevronDown, RefreshCw } from 'lucide-react';
 import toast from 'react-hot-toast';
 import ScorePreviewPanel from '../components/ScorePreviewPanel';
 
@@ -83,6 +83,35 @@ const Dining = () => {
       console.error('Error fetching dining places:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const cleanupDiningImages = async () => {
+    const confirmCleanup = window.confirm('This will replace all broken dining images with placeholder images. Continue?');
+    if (!confirmCleanup) return;
+    
+    const cleanupToast = toast.loading('Cleaning up dining images...');
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${API_BASE_URL}/api/dining/cleanup-images`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      const data = await response.json();
+      
+      if (data.success) {
+        toast.success(`Cleaned up ${data.updatedCount} dining images`, { id: cleanupToast });
+        // Refresh the dining places to show new images
+        fetchDiningPlaces();
+      } else {
+        toast.error(data.message || 'Failed to cleanup images', { id: cleanupToast });
+      }
+    } catch (error) {
+      toast.error('Failed to cleanup images', { id: cleanupToast });
+      console.error('Error cleaning up dining images:', error);
     }
   };
 
@@ -247,6 +276,14 @@ const Dining = () => {
           )}
         </div>
         <div className="mt-4 sm:mt-0 flex items-center space-x-3">
+          <button
+            onClick={cleanupDiningImages}
+            className="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500"
+            title="Replace broken images with placeholders"
+          >
+            <RefreshCw className="h-4 w-4 mr-2" />
+            Cleanup Images
+          </button>
           {selectedPropertyId && (
             <button
               onClick={() => setShowScorePreview(true)}

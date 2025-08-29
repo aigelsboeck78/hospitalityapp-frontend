@@ -86,6 +86,13 @@ const Events = () => {
       }
     } catch (error) {
       console.error('Error fetching stats:', error);
+      // Set default stats if the endpoint fails
+      setStats({ 
+        today: 0, 
+        upcoming: 0, 
+        featured: 0, 
+        total: 0 
+      });
     }
   };
 
