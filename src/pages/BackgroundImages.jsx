@@ -155,16 +155,29 @@ const BackgroundImages = () => {
 
     for (const file of selectedFiles) {
       try {
-        const formData = new FormData();
-        formData.append('background', file);
-        formData.append('season', selectedSeason);
-
+        // Convert file to base64 data URL
+        const reader = new FileReader();
+        const base64Promise = new Promise((resolve, reject) => {
+          reader.onload = () => resolve(reader.result);
+          reader.onerror = reject;
+          reader.readAsDataURL(file);
+        });
+        
+        const dataUrl = await base64Promise;
+        
+        // Send as JSON with base64 data URL
         const response = await fetch(`${API_BASE_URL}/api/property/${propertyId}/backgrounds`, {
           method: 'POST',
           headers: {
-            'Authorization': `Bearer ${token}`
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
           },
-          body: formData
+          body: JSON.stringify({
+            imageUrl: dataUrl,
+            title: file.name.replace(/\.[^/.]+$/, ''), // filename without extension
+            season: selectedSeason,
+            uploadType: 'file'
+          })
         });
 
         const data = await response.json();
@@ -190,6 +203,7 @@ const BackgroundImages = () => {
     setSelectedFiles([]);
     setSelectedSeason('all');
     setUploading(false);
+    fetchBackgroundImages(); // Refresh the list
   };
 
   // Helper function to get proper image URL
